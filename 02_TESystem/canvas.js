@@ -94,6 +94,8 @@ function Elevator(x, y) {
         // draw the box
         c.fillStyle = "blue";
         c.fillRect(this.x, this.y + (this.width+2) * this.layer, this.width, this.width); // 2px for space
+        c.fillStyle = "grey";
+        c.fillText('X', this.x+this.width+5, this.y + (this.width+2) * this.layer+10);
     }
 }
 function ModuleSection(x, y) {
