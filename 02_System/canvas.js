@@ -55,8 +55,8 @@ function HorizontalRuler(length) {
     }
 }
 
-function Inventory(layer, x, y) {
- this.layer = layer;
+function Rooms(floor, x, y) {
+ this.floor = floor;
  this.x = x;
  this.y = y;
  this.height = 10;
@@ -66,12 +66,12 @@ function Inventory(layer, x, y) {
 
  this.draw = function() {
     c.fillStyle = this.used ? "green": "grey";
-    c.fillText(this.layer, this.x-10, this.y+this.height);
+    c.fillText(this.floor, this.x-10, this.y+this.height);
     c.fillRect(this.x, this.y, this.width, this.height);
  }
 }
 
-function Buffer(x, y) {
+function Holder(x, y) {
     this.x = x;
     this.y = y;
 }
@@ -81,7 +81,7 @@ function Elevator(x, y) {
     this.y = y;
     this.width = 10;
     this.fillStyle = "grey";
-    this.layer = 0;
+    this.floor = 0;
 
     this.draw = function() {
         // draw the vertical line
@@ -93,15 +93,15 @@ function Elevator(x, y) {
 
         // draw the box
         c.fillStyle = "blue";
-        c.fillRect(this.x, this.y + (this.width+2) * this.layer, this.width, this.width); // 2px for space
+        c.fillRect(this.x, this.y + (this.width+2) * this.floor, this.width, this.width); // 2px for space
         c.fillStyle = "grey";
-        c.fillText('X', this.x+this.width+5, this.y + (this.width+2) * this.layer+10);
+        c.fillText('X', this.x+this.width+5, this.y + (this.width+2) * this.floor+10);
     }
 }
 function ModuleSection(x, y) {
     this.x = x;
     this.y = y;
-    this.usedLayer = 0;
+    this.usedFloor = 0;
 
     this.width = 10;
 
@@ -113,29 +113,29 @@ function ModuleSection(x, y) {
         c.strokeStyle = "grey";
         c.stroke();          
 
-        // layers are 0-based
+        // floors are 0-based
         // draw the modules
-        c.fillStyle = this.usedLayer==5 ? "red":"blue";
+        c.fillStyle = this.usedFloor==5 ? "red":"blue";
         c.fillRect(this.x, this.y + (this.width+2) * 5, this.width, this.width); // 2px for space
-        c.fillStyle = this.usedLayer==4 ? "red":"blue";
+        c.fillStyle = this.usedFloor==4 ? "red":"blue";
         c.fillRect(this.x, this.y + (this.width+2) * 4, this.width, this.width); // 2px for space
-        c.fillStyle = this.usedLayer==3 ? "red":"blue";
+        c.fillStyle = this.usedFloor==3 ? "red":"blue";
         c.fillRect(this.x, this.y + (this.width+2) * 3, this.width, this.width); // 2px for space
     }
 }
 
-function Stack(x,y) {
+function Building(x,y) {
     var _this = this;
     this.x = x;
     this.y = y;
     this.dt = 0;
    
-    this.inventory = [];
+    this.rooms = [];
     for (var i=0;i<9;i++){
-        this.inventory.push(new Inventory(i, this.x + 500, this.y + 12*i)); // 2px for space
+        this.rooms.push(new Rooms(i, this.x + 500, this.y + 12*i)); // 2px for space
     }
 
-    this.buffers = [];
+    this.holders = [];
     this.elevators = [];
     this.elevators.push(new Elevator(this.x + 400, this.y));
     this.elevators.push(new Elevator(this.x + 420, this.y));
@@ -145,41 +145,41 @@ function Stack(x,y) {
     this.modules.push(new ModuleSection(this.x + 380, this.y));
     
     this.draw = function() {
-        this.inventory.forEach(function(c){c.draw()});
+        this.rooms.forEach(function(c){c.draw()});
         this.elevators.forEach(function(c){c.draw()});
         this.modules.forEach(function(c){c.draw()});
     };
     this.update = function() {
         this.dt++;
-        let maxLayers = 8;
+        let maxFloors = 8;
 
-        this.elevators.forEach(function(c){ _this.inventory[c.layer].used = false });
+        this.elevators.forEach(function(c){ _this.rooms[c.floor].used = false });
 
         // move elevators on every 10th time step
         if (this.dt%10 == 0) {
             let dL = Math.random()>0.5 ? 1 : -1;
-            if ((dL>0 && this.elevators[0].layer === maxLayers) || (dL<0 && this.elevators[0].layer === 0)) {
+            if ((dL>0 && this.elevators[0].floor === maxFloors) || (dL<0 && this.elevators[0].floor === 0)) {
                 dL = 0;
             }
-            this.elevators[0].layer = (this.elevators[0].layer + dL+maxLayers) % maxLayers;
-            this.modules[0].usedLayer = this.elevators[0].layer;
+            this.elevators[0].floor = (this.elevators[0].floor + dL+maxFloors) % maxFloors;
+            this.modules[0].usedFloor = this.elevators[0].floor;
 
             dL = Math.random()>0.5 ? 1 : -1;
-            if ((dL>0 && this.elevators[1].layer === maxLayers) || (dL<0 && this.elevators[1].layer === 0)) {
+            if ((dL>0 && this.elevators[1].floor === maxFloors) || (dL<0 && this.elevators[1].floor === 0)) {
                 dL = 0;
             }
-            this.elevators[1].layer = (this.elevators[1].layer + dL+maxLayers) % maxLayers;
-            this.modules[1].usedLayer = this.elevators[1].layer;
+            this.elevators[1].floor = (this.elevators[1].floor + dL+maxFloors) % maxFloors;
+            this.modules[1].usedFloor = this.elevators[1].floor;
         }
         
-        this.elevators.forEach(function(c){_this.inventory[c.layer].used = true});
+        this.elevators.forEach(function(c){_this.rooms[c.floor].used = true});
     };
 }
 
 // Animation
-var stacks = [];
+var buildings = [];
 
-stacks.push(new Stack(100, 100));
+buildings.push(new Building(100, 100));
 
 var rulers = [new VerticalRuler(innerHeight), new HorizontalRuler(innerWidth)];
 
@@ -192,9 +192,9 @@ function animate() {
     // draw rulers
     rulers.forEach(function(c){c.draw()});
 
-    // draw & update stacks
-    stacks.forEach(function(c){c.draw()});
-    stacks.forEach(function(c){c.update()});
+    // draw & update buildings
+    buildings.forEach(function(c){c.draw()});
+    buildings.forEach(function(c){c.update()});
 }
 
 animate();
