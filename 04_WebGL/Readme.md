@@ -1,6 +1,6 @@
-# 3D Cube
+# Expanding into using WebGL
 
-A 3D cube in the canvas.
+A 3D cube in the canvas with the intent of playing around a little with WebGL.
 
 ## Tips
 
